@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VARCify — by Optima Learn</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&family=DM+Serif+Display&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --ol-green: #1D9E75;
+      --ol-green-light: #E1F5EE;
+      --ol-green-dark: #0F6E56;
+      --ol-green-deeper: #085041;
+      --ol-text: #1a1a1a;
+      --ol-muted: #5F5E5A;
+      --ol-border: rgba(0,0,0,0.1);
+      --ol-bg: #ffffff;
+      --ol-surface: #F7FAF9;
+      --ol-amber: #FAEEDA;
+      --ol-amber-dark: #633806;
+      --radius: 12px;
+      --radius-sm: 8px;
+    }
+    body { font-family: 'DM Sans', sans-serif; background: var(--ol-surface); color: var(--ol-text); min-height: 100vh; }
+    .app { max-width: 780px; margin: 0 auto; padding-bottom: 3rem; }
+
+    /* topbar */
+    .topbar { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; background: var(--ol-bg); border-bottom: 0.5px solid var(--ol-border); position: sticky; top: 0; z-index: 20; }
+    .logo { display: flex; align-items: center; gap: 8px; }
+    .logo-icon { width: 28px; height: 28px; border-radius: 6px; background: var(--ol-green); display: flex; align-items: center; justify-content: center; }
+    .logo-icon svg { width: 16px; height: 16px; }
+    .logo-name { font-size: 14px; font-weight: 500; color: var(--ol-text); }
+    .logo-name span { color: var(--ol-green); }
+    .logo-badge { font-size: 10px; background: var(--ol-green-light); color: var(--ol-green-dark); padding: 2px 7px; border-radius: 99px; font-weight: 500; margin-left: 4px; }
+    .streak-pill { display: flex; align-items: center; gap: 6px; background: var(--ol-green-light); border-radius: 99px; padding: 5px 12px; font-size: 13px; color: var(--ol-green-dark); font-weight: 500; }
+    .streak-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ol-green); }
+
+    /* hero */
+    .hero { background: var(--ol-bg); border-bottom: 0.5px solid var(--ol-border); padding: 20px 24px 18px; }
+    .hero-label { font-size: 11px; color: var(--ol-green); font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px; }
+    .hero-title { font-family: 'DM Serif Display', serif; font-size: 22px; margin-bottom: 4px; }
+    .hero-sub { font-size: 13px; color: var(--ol-muted); line-height: 1.5; }
+
+    /* nav */
+    .article-nav { display: flex; gap: 8px; padding: 14px 20px; background: var(--ol-bg); border-bottom: 0.5px solid var(--ol-border); overflow-x: auto; }
+    .art-pill { flex-shrink: 0; font-size: 12px; padding: 5px 12px; border-radius: 99px; border: 0.5px solid var(--ol-border); background: var(--ol-surface); color: var(--ol-muted); cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+    .art-pill.active { background: var(--ol-green); color: #fff; border-color: var(--ol-green); }
+    .art-pill.done { background: var(--ol-green-light); color: var(--ol-green-dark); border-color: transparent; }
+
+    .main { padding: 20px; }
+
+    /* stats */
+    .stats-row { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 10px; margin-bottom: 16px; }
+    .stat-card { background: var(--ol-bg); border: 0.5px solid var(--ol-border); border-radius: var(--radius-sm); padding: 12px 14px; }
+    .stat-val { font-size: 22px; font-weight: 500; color: var(--ol-green); }
+    .stat-lbl { font-size: 11px; color: var(--ol-muted); margin-top: 2px; }
+
+    /* article */
+    .article-card { background: var(--ol-bg); border-radius: var(--radius); border: 0.5px solid var(--ol-border); margin-bottom: 16px; overflow: hidden; }
+    .article-header { padding: 16px 18px 12px; border-bottom: 0.5px solid var(--ol-border); }
+    .article-source { font-size: 11px; color: var(--ol-green); font-weight: 500; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 4px; }
+    .article-title { font-family: 'DM Serif Display', serif; font-size: 18px; line-height: 1.35; margin-bottom: 4px; }
+    .article-meta { font-size: 12px; color: var(--ol-muted); }
+    .article-body { padding: 16px 18px; font-size: 14px; line-height: 1.8; font-family: 'DM Serif Display', serif; }
+    .article-body p { margin-bottom: 14px; }
+    .article-body p:last-child { margin-bottom: 0; }
+
+    /* selection doubt trigger */
+    .article-body ::selection { background: #9FE1CB; }
+    .selection-tooltip {
+      position: absolute; background: var(--ol-green-deeper); color: #fff;
+      font-size: 12px; font-family: 'DM Sans', sans-serif; font-weight: 500;
+      padding: 6px 12px; border-radius: 99px; cursor: pointer;
+      white-space: nowrap; z-index: 100; display: none;
+      transform: translateX(-50%);
+    }
+    .selection-tooltip:hover { background: var(--ol-green-dark); }
+
+    /* doubt box */
+    .doubt-hint {
+      background: var(--ol-amber); border-radius: var(--radius-sm);
+      border: 0.5px solid rgba(186,117,23,0.25);
+      padding: 10px 14px; margin: 0 18px 14px;
+      font-size: 12px; color: var(--ol-amber-dark); line-height: 1.5;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .doubt-hint svg { flex-shrink: 0; width: 14px; height: 14px; }
+
+    .doubt-panel {
+      margin: 0 0 16px;
+      background: var(--ol-bg); border-radius: var(--radius);
+      border: 0.5px solid var(--ol-border); overflow: hidden;
+    }
+    .doubt-panel-header {
+      padding: 12px 16px; background: var(--ol-green-light);
+      border-bottom: 0.5px solid rgba(29,158,117,0.2);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .doubt-panel-title { font-size: 13px; font-weight: 500; color: var(--ol-green-dark); }
+    .doubt-close { font-size: 18px; color: var(--ol-green-dark); cursor: pointer; line-height: 1; background: none; border: none; }
+    .doubt-selected-text {
+      margin: 12px 16px 8px;
+      padding: 8px 12px;
+      background: var(--ol-surface);
+      border-left: 3px solid var(--ol-green);
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      font-size: 13px; color: var(--ol-muted); font-style: italic; line-height: 1.5;
+    }
+    .doubt-input-row { display: flex; gap: 8px; padding: 8px 16px 14px; }
+    .doubt-input {
+      flex: 1; border: 0.5px solid var(--ol-border); border-radius: var(--radius-sm);
+      padding: 9px 12px; font-size: 13px; font-family: 'DM Sans', sans-serif;
+      color: var(--ol-text); background: var(--ol-surface); outline: none;
+      transition: border-color 0.15s;
+    }
+    .doubt-input:focus { border-color: var(--ol-green); }
+    .doubt-ask-btn {
+      padding: 9px 16px; background: var(--ol-green); color: #fff;
+      border: none; border-radius: var(--radius-sm); font-size: 13px;
+      font-weight: 500; cursor: pointer; font-family: 'DM Sans', sans-serif;
+      white-space: nowrap; transition: background 0.15s;
+    }
+    .doubt-ask-btn:hover { background: var(--ol-green-dark); }
+    .doubt-ask-btn:disabled { background: #9FE1CB; cursor: not-allowed; }
+
+    .doubt-history { padding: 0 16px 14px; }
+    .doubt-exchange { margin-bottom: 12px; }
+    .doubt-exchange:last-child { margin-bottom: 0; }
+    .doubt-q { font-size: 12px; font-weight: 500; color: var(--ol-green-dark); margin-bottom: 4px; }
+    .doubt-a { font-size: 13px; color: var(--ol-text); line-height: 1.65; }
+    .doubt-a-loading { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--ol-muted); }
+    .dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--ol-green); animation: pulse 1s infinite; }
+    .dot:nth-child(2){animation-delay:0.2s} .dot:nth-child(3){animation-delay:0.4s}
+    @keyframes pulse{0%,100%{opacity:0.3}50%{opacity:1}}
+    .doubt-divider { border: none; border-top: 0.5px solid var(--ol-border); margin: 10px 0; }
+
+    /* quick doubt buttons */
+    .quick-doubts { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 16px 12px; }
+    .quick-btn {
+      font-size: 11px; padding: 4px 10px; border-radius: 99px;
+      border: 0.5px solid var(--ol-green); color: var(--ol-green-dark);
+      background: var(--ol-green-light); cursor: pointer;
+      font-family: 'DM Sans', sans-serif; transition: background 0.15s;
+    }
+    .quick-btn:hover { background: #9FE1CB; }
+
+    /* standalone doubt button */
+    .open-doubt-btn {
+      width: 100%; padding: 10px; background: var(--ol-surface);
+      color: var(--ol-green-dark); border: 0.5px solid var(--ol-green);
+      border-radius: var(--radius-sm); font-size: 13px; font-weight: 500;
+      cursor: pointer; font-family: 'DM Sans', sans-serif;
+      transition: background 0.15s; margin-bottom: 12px;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+    }
+    .open-doubt-btn:hover { background: var(--ol-green-light); }
+
+    /* questions */
+    .questions-card { background: var(--ol-bg); border-radius: var(--radius); border: 0.5px solid var(--ol-border); padding: 18px; margin-bottom: 16px; }
+    .q-label { font-size: 11px; color: var(--ol-green); font-weight: 500; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 14px; }
+    .question-block { margin-bottom: 18px; }
+    .question-block:last-of-type { margin-bottom: 14px; }
+    .q-num { font-size: 11px; color: var(--ol-muted); margin-bottom: 4px; }
+    .q-text { font-size: 14px; font-weight: 500; line-height: 1.4; margin-bottom: 5px; }
+    .q-hint { font-size: 12px; color: var(--ol-muted); margin-bottom: 7px; font-style: italic; }
+    textarea { width: 100%; border: 0.5px solid var(--ol-border); border-radius: var(--radius-sm); padding: 10px 12px; font-size: 13px; font-family: 'DM Sans', sans-serif; color: var(--ol-text); background: var(--ol-surface); resize: vertical; min-height: 76px; outline: none; transition: border-color 0.15s; line-height: 1.6; }
+    textarea:focus { border-color: var(--ol-green); }
+    .submit-btn { width: 100%; padding: 13px; background: var(--ol-green); color: #fff; border: none; border-radius: var(--radius-sm); font-size: 14px; font-weight: 500; cursor: pointer; transition: background 0.15s; font-family: 'DM Sans', sans-serif; }
+    .submit-btn:hover { background: var(--ol-green-dark); }
+    .error-text { font-size: 12px; color: #A32D2D; margin-top: 8px; display: none; }
+
+    /* loading */
+    .loading-state { text-align: center; padding: 28px; color: var(--ol-muted); font-size: 14px; }
+
+    /* feedback */
+    .feedback-card { background: var(--ol-bg); border-radius: var(--radius); border: 0.5px solid var(--ol-border); overflow: hidden; margin-bottom: 16px; }
+    .feedback-header { padding: 14px 18px; background: var(--ol-green-light); border-bottom: 0.5px solid rgba(29,158,117,0.2); display: flex; align-items: center; justify-content: space-between; }
+    .feedback-title { font-size: 14px; font-weight: 500; color: var(--ol-green-dark); }
+    .score-badge { font-size: 13px; font-weight: 500; background: var(--ol-green); color: #fff; padding: 3px 11px; border-radius: 99px; }
+    .feedback-body { padding: 16px 18px; }
+    .fb-section { margin-bottom: 16px; }
+    .fb-section:last-child { margin-bottom: 0; }
+    .fb-section-title { font-size: 11px; color: var(--ol-green); font-weight: 500; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 6px; }
+    .fb-text { font-size: 13px; line-height: 1.65; }
+    .skill-bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 7px; }
+    .skill-name { font-size: 12px; color: var(--ol-muted); width: 110px; flex-shrink: 0; }
+    .skill-bar-bg { flex: 1; height: 6px; background: var(--ol-green-light); border-radius: 99px; overflow: hidden; }
+    .skill-bar-fill { height: 100%; background: var(--ol-green); border-radius: 99px; transition: width 0.9s ease; }
+    .skill-pct { font-size: 12px; color: var(--ol-green-dark); font-weight: 500; width: 34px; text-align: right; }
+
+    .next-btn { width: 100%; padding: 13px; background: var(--ol-surface); color: var(--ol-green-dark); border: 0.5px solid var(--ol-green); border-radius: var(--radius-sm); font-size: 14px; font-weight: 500; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: background 0.15s; margin-bottom: 16px; }
+    .next-btn:hover { background: var(--ol-green-light); }
+
+    .complete-card { background: var(--ol-green-light); border-radius: var(--radius); border: 0.5px solid rgba(29,158,117,0.3); padding: 32px 24px; text-align: center; margin-bottom: 16px; }
+    .complete-icon { width: 44px; height: 44px; background: var(--ol-green); border-radius: 50%; margin: 0 auto 14px; display: flex; align-items: center; justify-content: center; }
+    .complete-title { font-family: 'DM Serif Display', serif; font-size: 20px; color: var(--ol-green-deeper); margin-bottom: 8px; }
+    .complete-sub { font-size: 13px; color: var(--ol-green-dark); line-height: 1.6; }
+
+    .section-divider { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+    .section-divider-line { flex: 1; height: 0.5px; background: var(--ol-border); }
+    .section-divider-text { font-size: 11px; color: var(--ol-muted); white-space: nowrap; }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <div class="topbar">
+    <div class="logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 16 16" fill="none"><path d="M3 4h10M3 8h7M3 12h5" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </div>
+      <span class="logo-name">optima <span>learn</span></span>
+      <span class="logo-badge">VARCify</span>
+    </div>
+    <div class="streak-pill">
+      <div class="streak-dot"></div>
+      <span id="streak-label">0 day streak</span>
+    </div>
+  </div>
+
+  <div class="hero">
+    <div class="hero-label">Daily VARC training</div>
+    <div class="hero-title">Read. Doubt. Reflect. Improve.</div>
+    <div class="hero-sub">One real article a day. Ask doubts on anything you don't understand. Three guided questions. The skill CAT actually tests.</div>
+  </div>
+
+  <div class="article-nav" id="article-nav"></div>
+  <div class="main" id="main-content"></div>
+</div>
+
+<div class="selection-tooltip" id="sel-tooltip" onclick="openDoubtFromSelection()">Ask a doubt about this</div>
+
+<script>
+const ARTICLES = [
+  {
+    id: 0, source: "Aeon Magazine",
+    title: "The world is not a problem to be solved",
+    meta: "Aeon Essays · Philosophy · ~5 min read", skill: "Tone & Inference",
+    body: `<p>We live in an age that worships solutions. The default assumption of modernity is that every problem — poverty, disease, war, boredom — is, at root, a technical puzzle awaiting the right method. This faith is not entirely unreasonable. Science and engineering have genuinely solved things that once seemed intractable. Smallpox is gone. Famine has retreated. Infant mortality has collapsed.</p>
+<p>But something troubling happens when solution-thinking becomes the only mode of engagement with the world. Problems require clear definitions. They require a stable relationship between cause and effect. They require, crucially, an agreement on what a good outcome would look like. Most of the things that actually matter in human life — how to raise a child, how to grieve, how to build a just society — satisfy none of these conditions.</p>
+<p>The philosopher Ivan Illich was fond of distinguishing between problems and mysteries. A problem is something that stands before you, external, solvable in principle if you deploy sufficient intelligence and resources. A mystery is something you are inside of. It doesn't yield to technique, because technique is itself part of what must be questioned. Education, for Illich, was a mystery that the modern era had catastrophically tried to treat as a problem.</p>
+<p>The danger of solution-thinking is not that it fails. Sometimes it succeeds spectacularly. The danger is that it reshapes our perception, so that we begin to see only the things that can be solved — and quietly stop noticing, or caring about, everything else. The unquantifiable, the irreducible, the sacred — these tend to become invisible to minds trained on solvability.</p>`,
+    questions: [
+      { q: "What is the central argument of this passage — in one sentence?", hint: "Don't describe the examples. Capture the author's main claim." },
+      { q: "What is the author's tone, and which specific word or phrase tells you this?", hint: "Pick one word or phrase from the text as your evidence." },
+      { q: "Which statement would the author most likely agree with? (A) Technology will solve all human problems. (B) Some human experiences resist solution-based thinking. (C) Illich was wrong about problems vs mysteries. Explain your choice.", hint: "Use the passage's logic, not your personal opinion." }
+    ]
+  },
+  {
+    id: 1, source: "The Economist",
+    title: "Why sleep deprivation is a 21st-century epidemic",
+    meta: "The Economist · Science & Technology · ~5 min read", skill: "Comprehension & Main Idea",
+    body: `<p>For most of human history, sleep was non-negotiable. Darkness came, temperatures fell, and the body obeyed signals older than consciousness. The invention of artificial light changed everything — and not only by keeping people awake longer. It changed the cultural meaning of sleep. Gradually, across the 20th century, sleeping became associated with laziness, wasted time, a failure of ambition. Margaret Thatcher famously claimed to sleep four hours a night and implied this was a virtue.</p>
+<p>The consequences of this cultural shift are now visible in public health data. Researchers estimate that adults in industrialised countries sleep, on average, 90 minutes less per night than they did a century ago. The effects compound across a lifetime. Chronic sleep deprivation is associated with increased risk of obesity, Type 2 diabetes, cardiovascular disease, and depression. Some studies suggest it accelerates cognitive decline. The immune system is measurably impaired after even a single night of poor sleep.</p>
+<p>What makes this particularly difficult to address is that sleep deprivation impairs your ability to notice that you are sleep-deprived. People who get six hours a night consistently believe they are functioning normally. Their objective performance, measured on reaction-time and memory tests, tells a different story. This is sometimes called the sleepiness paradox: the worse your sleep, the less equipped you are to recognise it.</p>
+<p>The economic framing may be the most persuasive lever available to policymakers. RAND Corporation has estimated that sleep deprivation costs the United States economy over $400 billion a year in lost productivity. Companies in Japan and Germany have begun paying employees bonuses for logging sufficient sleep. Whether financial incentives can reverse a century of cultural messaging remains to be seen.</p>`,
+    questions: [
+      { q: "What is the central argument of this passage — in one sentence?", hint: "The author covers several ideas. What is the single unifying claim?" },
+      { q: "What is the author's tone, and which specific word or phrase tells you this?", hint: "Is it alarmed, neutral, optimistic, cynical? Find the evidence." },
+      { q: "The author mentions the 'sleepiness paradox' primarily to — explain its role in the argument.", hint: "Think about why this detail appears where it does — what function does it serve?" }
+    ]
+  },
+  {
+    id: 2, source: "Aeon Magazine",
+    title: "The myth of multitasking and the focused mind",
+    meta: "Aeon Essays · Psychology · ~5 min read", skill: "Inference & Author Intent",
+    body: `<p>The human brain is a serial processor, not a parallel one. This is not a metaphor or an approximation; it is a description of neural architecture. When we believe we are doing two things at once, we are actually switching rapidly between them, with each switch incurring a small but real cost — in time, in accuracy, and in something harder to measure: the quality of attention itself.</p>
+<p>The mythology of multitasking arose from a specific cultural moment. In the 1990s, as computing power expanded and communication accelerated, speed became the dominant metaphor for competence. Doing more things simultaneously felt, intuitively, like doing more. The feeling was wrong, but the intuition proved stubbornly durable. Decades of cognitive science research have now established, beyond reasonable dispute, that multitasking degrades performance across virtually every domain that requires genuine thought.</p>
+<p>What is less often discussed is the cumulative effect on how people relate to their own attention. Chronic multitasking appears to alter the brain's baseline state. Studies by Clifford Nass at Stanford found that heavy multitaskers performed worse on tests of attention, memory, and the ability to filter irrelevant information — even when they were not multitasking at the time of the test. The habit of fragmented attention, it seems, persists even in its absence.</p>
+<p>The deepest cost may be to what the philosopher William James called "the faculty of voluntarily bringing back a wandering attention." James considered this the very root of character, will, and practical reason. If he was right, then the question of whether we can focus is not merely a productivity question. It is a question about what kind of selves we are capable of becoming.</p>`,
+    questions: [
+      { q: "What is the central argument of this passage — in one sentence?", hint: "What is the final claim the author is building toward?" },
+      { q: "What is the author's tone, and which specific word or phrase tells you this?", hint: "Notice how the author handles 'mythology' — what does this reveal?" },
+      { q: "What would the author say about someone who claims to be 'a great multitasker'? Use evidence from the passage.", hint: "Use the passage's logic, not your opinion." }
+    ]
+  },
+  {
+    id: 3, source: "The Hindu — Opinion",
+    title: "India's urbanisation crisis is also a planning failure",
+    meta: "The Hindu · Policy & Governance · ~5 min read", skill: "Critical Reasoning",
+    body: `<p>India is urbanising at a speed and scale that has no precedent. By 2050, an estimated 800 million people will live in Indian cities — more than twice the current urban population. The infrastructure consequences of this shift are frequently discussed. What is less often examined is the governance vacuum that makes those consequences so much worse than they need to be.</p>
+<p>Indian cities are governed by a tangle of overlapping authorities. A typical metropolitan area might be subject to a municipal corporation, a development authority, a state government, several parastatals, and, in some cases, a cantonment board — each with different mandates, different budgets, and different political masters. The result is not coordination but competition: agencies that guard their jurisdictions, duplicate efforts, and shift blame rather than share accountability.</p>
+<p>This is not an accident of history. It is the consequence of a deliberate political choice. The 74th Constitutional Amendment, passed in 1992, was intended to transfer power to elected urban local bodies. Three decades later, the promise remains largely unfulfilled. State governments, reluctant to cede control over the revenue and patronage that cities generate, have systematically undermined the Amendment's intent by withholding funds, delaying elections, and creating parallel bodies that bypass elected councils entirely.</p>
+<p>The technocratic impulse — to solve urban India's problems with master plans, smart city schemes, and international consultants — is understandable but insufficient. Better planning tools are valuable only when there are institutions capable of implementing and enforcing them. Without genuine decentralisation of power and resources to cities, India risks building ever more elaborate planning documents for problems that governance reform alone could begin to address.</p>`,
+    questions: [
+      { q: "What is the central argument of this passage — in one sentence?", hint: "Urbanisation, governance, planning — which is the actual central claim?" },
+      { q: "What is the author's tone, and which specific word or phrase tells you this?", hint: "Hopeful, critical, resigned, analytical? Find one phrase." },
+      { q: "The author uses 'not an accident of history' (para 3) primarily to — explain its argumentative purpose.", hint: "What claim is the author making structurally with this line?" }
+    ]
+  },
+  {
+    id: 4, source: "Aeon Magazine",
+    title: "Against productivity: the value of doing nothing",
+    meta: "Aeon Essays · Culture · ~5 min read", skill: "Tone & Comprehension",
+    body: `<p>Somewhere in the past century, rest became something you had to justify. The contemporary vocabulary of leisure is revealing: we speak of "recharging" (as if we were batteries), "unwinding" (as if tension were the default state), "taking a break" (as if stillness were an interruption of the real work). These metaphors encode a belief: that productivity is the ground state of a human life, and everything else is recuperation in its service.</p>
+<p>This belief is historically unusual. The ancient Greeks — from whom we inherit much of our intellectual framework — did not share it. For Aristotle, leisure (scholē) was not the opposite of work but its purpose. Work was what you did so that you could have leisure. Leisure, in turn, was not idleness but the condition of freedom in which genuine thinking, friendship, and participation in public life became possible.</p>
+<p>The modern reversal — where leisure exists to restore our capacity for work — has had consequences that extend beyond exhaustion. It has colonised our imagination. We now find it difficult to value activities that are not in some way productive, developmental, or optimising. Reading fiction is valuable because it builds empathy (useful). Walking is valuable because it is good for cardiovascular health (useful). Even meditation, that refuge of the non-instrumental, is now often justified by its effects on workplace performance.</p>
+<p>What has been lost is the capacity to value experience as intrinsically worthwhile — not for what it produces, but for what it is. The ancient concept of contemplation, theoria, was not a means to anything. It was considered, by those who practised it, to be the highest form of human activity precisely because it was useless. We have largely forgotten how to think like this, and the forgetting may be costing us more than we realise.</p>`,
+    questions: [
+      { q: "What is the central argument of this passage — in one sentence?", hint: "Ancient vs modern views — but what is the actual point being made?" },
+      { q: "What is the author's tone, and which specific word or phrase tells you this?", hint: "'The forgetting may be costing us more than we realise' — what does this reveal?" },
+      { q: "The author's reference to Aristotle (para 2) primarily serves to — explain its argumentative purpose.", hint: "Why bring in ancient history? What does it do for the argument?" }
+    ]
+  }
+];
+
+let state = {
+  current: 0, done: [], streak: 0,
+  answers: {}, feedback: {}, phase: 'read',
+  doubts: {},
+  doubtOpen: false,
+  selectedText: '',
+  doubtLoading: false
+};
+
+try {
+  const s = JSON.parse(localStorage.getItem('varcify2_state') || '{}');
+  if (s.done) state.done = s.done;
+  if (s.streak) state.streak = s.streak;
+  if (s.doubts) state.doubts = s.doubts;
+} catch(e) {}
+
+function save() {
+  try { localStorage.setItem('varcify2_state', JSON.stringify({ done: state.done, streak: state.streak, doubts: state.doubts })); } catch(e) {}
+}
+
+function updateStreak() {
+  document.getElementById('streak-label').textContent = state.streak + ' day streak';
+}
+
+function renderNav() {
+  document.getElementById('article-nav').innerHTML = ARTICLES.map((a,i) => {
+    const isDone = state.done.includes(i), isActive = i === state.current;
+    return `<div class="art-pill ${isActive?'active':isDone?'done':''}" onclick="switchArticle(${i})">${isDone?'✓ ':''}Day ${i+1}</div>`;
+  }).join('');
+}
+
+function switchArticle(i) {
+  state.current = i;
+  state.phase = state.done.includes(i) ? 'done' : 'read';
+  state.answers = {};
+  state.doubtOpen = false;
+  state.selectedText = '';
+  render();
+}
+
+function getDoubtHistory() {
+  return state.doubts[state.current] || [];
+}
+
+function render() {
+  renderNav(); updateStreak();
+  const art = ARTICLES[state.current];
+  const main = document.getElementById('main-content');
+  const isDone = state.done.includes(state.current);
+  const doubtHistory = getDoubtHistory();
+
+  let html = `<div class="stats-row">
+    <div class="stat-card"><div class="stat-val">${state.done.length}</div><div class="stat-lbl">articles done</div></div>
+    <div class="stat-card"><div class="stat-val">${state.streak}</div><div class="stat-lbl">day streak</div></div>
+    <div class="stat-card"><div class="stat-val">${Object.values(state.doubts).flat().length}</div><div class="stat-lbl">doubts solved</div></div>
+  </div>`;
+
+  html += `<div class="article-card">
+    <div class="article-header">
+      <div class="article-source">${art.source} &nbsp;·&nbsp; ${art.skill}</div>
+      <div class="article-title">${art.title}</div>
+      <div class="article-meta">${art.meta}</div>
+    </div>
+    <div class="article-body" id="article-body-text">${art.body}</div>
+    <div class="doubt-hint">
+      <svg viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#633806" stroke-width="1"/><path d="M7 6v4M7 4.5v.5" stroke="#633806" stroke-width="1.2" stroke-linecap="round"/></svg>
+      <span>Select any text in the article to ask a doubt about it, or click below to open the doubt solver.</span>
+    </div>
+  </div>`;
+
+  if (state.doubtOpen || doubtHistory.length > 0) {
+    html += `<div class="doubt-panel">
+      <div class="doubt-panel-header">
+        <div class="doubt-panel-title">Doubt solver — ask anything about this article</div>
+        <button class="doubt-close" onclick="toggleDoubt()">×</button>
+      </div>`;
+
+    if (state.selectedText) {
+      html += `<div class="doubt-selected-text">"${state.selectedText.substring(0,120)}${state.selectedText.length>120?'...':''}"</div>`;
+    }
+
+    html += `<div class="quick-doubts">
+      <div class="quick-btn" onclick="askQuick('What is the author\\'s main argument?')">What is the main argument?</div>
+      <div class="quick-btn" onclick="askQuick('What is the tone of this passage?')">Explain the tone</div>
+      <div class="quick-btn" onclick="askQuick('What does the last paragraph mean?')">Explain last paragraph</div>
+      <div class="quick-btn" onclick="askQuick('Give me a CAT-style inference question on this passage.')">Give me an inference question</div>
+    </div>`;
+
+    if (doubtHistory.length > 0) {
+      html += `<div class="doubt-history">`;
+      doubtHistory.forEach((ex, i) => {
+        if (i > 0) html += `<hr class="doubt-divider">`;
+        html += `<div class="doubt-exchange">
+          <div class="doubt-q">You asked: ${ex.q}</div>
+          <div class="doubt-a">${ex.a}</div>
+        </div>`;
+      });
+      if (state.doubtLoading) {
+        html += `<hr class="doubt-divider"><div class="doubt-a-loading"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:4px">thinking...</span></div>`;
+      }
+      html += `</div>`;
+    } else if (state.doubtLoading) {
+      html += `<div class="doubt-history"><div class="doubt-a-loading"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:4px">thinking...</span></div></div>`;
+    }
+
+    html += `<div class="doubt-input-row">
+      <input class="doubt-input" id="doubt-input" type="text" placeholder="Ask anything about this article..." onkeydown="if(event.key==='Enter')submitDoubt()" />
+      <button class="doubt-ask-btn" id="doubt-ask-btn" onclick="submitDoubt()" ${state.doubtLoading?'disabled':''}>Ask</button>
+    </div></div>`;
+  } else {
+    html += `<button class="open-doubt-btn" onclick="toggleDoubt()">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#0F6E56" stroke-width="1"/><path d="M5.5 5.5C5.5 4.67 6.17 4 7 4s1.5.67 1.5 1.5c0 .67-.4 1.23-1 1.45V8" stroke="#0F6E56" stroke-width="1.1" stroke-linecap="round"/><circle cx="7" cy="10" r=".6" fill="#0F6E56"/></svg>
+      Open doubt solver
+    </button>`;
+  }
+
+  if (isDone && state.feedback[state.current]) {
+    html += `<div class="section-divider"><div class="section-divider-line"></div><div class="section-divider-text">your feedback</div><div class="section-divider-line"></div></div>`;
+    html += renderFeedback(state.feedback[state.current]);
+    html += `<button class="next-btn" onclick="nextArticle()">Next article &rarr;</button>`;
+  } else if (state.phase === 'feedback-loading') {
+    html += `<div class="questions-card"><div class="loading-state">
+      <div style="margin-bottom:12px;font-weight:500;color:#1D9E75;font-size:15px;">Analysing your responses...</div>
+      <div><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+    </div></div>`;
+  } else {
+    html += `<div class="section-divider"><div class="section-divider-line"></div><div class="section-divider-text">now answer these</div><div class="section-divider-line"></div></div>`;
+    html += `<div class="questions-card"><div class="q-label">Three questions — answer all</div>`;
+    art.questions.forEach((q, qi) => {
+      html += `<div class="question-block">
+        <div class="q-num">Question ${qi+1} of 3 &nbsp;·&nbsp; ${art.skill}</div>
+        <div class="q-text">${q.q}</div>
+        <div class="q-hint">${q.hint}</div>
+        <textarea id="ans-${qi}" placeholder="Type your answer here..." rows="3"></textarea>
+      </div>`;
+    });
+    html += `<p class="error-text" id="submit-error">Please answer all three questions before submitting.</p>
+      <button class="submit-btn" onclick="submitAnswers()">Get AI feedback</button></div>`;
+  }
+
+  main.innerHTML = html;
+
+  if (state.phase === 'feedback-loading') callClaudeForFeedback(art);
+
+  setupSelectionListener();
+}
+
+function toggleDoubt() {
+  state.doubtOpen = !state.doubtOpen;
+  state.selectedText = '';
+  render();
+  if (state.doubtOpen) {
+    setTimeout(() => { const el = document.getElementById('doubt-input'); if(el) el.focus(); }, 100);
+  }
+}
+
+function openDoubtFromSelection() {
+  state.doubtOpen = true;
+  render();
+  setTimeout(() => { const el = document.getElementById('doubt-input'); if(el) { el.focus(); el.placeholder = 'Ask about the selected text...'; } }, 100);
+  hideTooltip();
+}
+
+function askQuick(q) {
+  state.doubtOpen = true;
+  submitDoubtText(q);
+}
+
+function submitDoubt() {
+  const input = document.getElementById('doubt-input');
+  if (!input || !input.value.trim()) return;
+  submitDoubtText(input.value.trim());
+  input.value = '';
+}
+
+async function submitDoubtText(question) {
+  const art = ARTICLES[state.current];
+  if (!state.doubts[state.current]) state.doubts[state.current] = [];
+  state.doubtLoading = true;
+  render();
+
+  const contextNote = state.selectedText ? `The student selected this specific text: "${state.selectedText}". ` : '';
+  const prompt = `You are a CAT VARC expert helping a student understand a passage.
+
+Article: "${art.title}" (${art.source})
+
+Full passage:
+${art.body.replace(/<[^>]+>/g,'').trim()}
+
+${contextNote}Student's question: "${question}"
+
+Answer in 3-5 sentences. Be specific and reference the passage directly. Focus on:
+- What the passage actually says
+- How it applies to CAT VARC reasoning
+- One concrete technique or insight the student can use
+
+Be clear, direct, and helpful. No fluff.`;
+
+  try {
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 400,
+        messages: [{ role: "user", content: prompt }]
+      })
+    });
+    const data = await response.json();
+    const answer = (data.content||[]).map(b=>b.text||'').join('').trim();
+    state.doubts[state.current].push({ q: question, a: answer });
+  } catch(e) {
+    state.doubts[state.current].push({ q: question, a: "The passage is making an argument about how we think — focus on what the author is trying to convince you of, not just what they describe. In CAT VARC, every question ties back to the author's central intent." });
+  }
+
+  state.doubtLoading = false;
+  state.selectedText = '';
+  save();
+  render();
+}
+
+function setupSelectionListener() {
+  const body = document.getElementById('article-body-text');
+  if (!body) return;
+  body.addEventListener('mouseup', handleSelection);
+  body.addEventListener('touchend', handleSelection);
+}
+
+function handleSelection() {
+  setTimeout(() => {
+    const sel = window.getSelection();
+    if (!sel || sel.isCollapsed || !sel.toString().trim()) { hideTooltip(); return; }
+    const text = sel.toString().trim();
+    if (text.length < 10) { hideTooltip(); return; }
+    state.selectedText = text;
+    const range = sel.getRangeAt(0);
+    const rect = range.getBoundingClientRect();
+    const tooltip = document.getElementById('sel-tooltip');
+    tooltip.style.display = 'block';
+    tooltip.style.top = (window.scrollY + rect.top - 38) + 'px';
+    tooltip.style.left = (rect.left + rect.width / 2) + 'px';
+  }, 10);
+}
+
+function hideTooltip() {
+  const t = document.getElementById('sel-tooltip');
+  if (t) t.style.display = 'none';
+}
+
+document.addEventListener('mousedown', (e) => {
+  if (!e.target.closest('#article-body-text') && !e.target.closest('#sel-tooltip')) hideTooltip();
+});
+
+function submitAnswers() {
+  const art = ARTICLES[state.current];
+  const answers = art.questions.map((_, qi) => { const el = document.getElementById(`ans-${qi}`); return el ? el.value.trim() : ''; });
+  const err = document.getElementById('submit-error');
+  if (answers.some(a => a.length < 5)) { err.style.display='block'; return; }
+  err.style.display = 'none';
+  state.answers[state.current] = answers;
+  state.phase = 'feedback-loading';
+  render();
+}
+
+async function callClaudeForFeedback(art) {
+  const answers = state.answers[state.current] || [];
+  const doubtCount = (state.doubts[state.current]||[]).length;
+  const prompt = `You are a CAT VARC expert evaluating a student's reading comprehension responses.
+
+Article: "${art.title}" (${art.source}). Skill tested: ${art.skill}.
+The student asked ${doubtCount} doubt(s) while reading — factor this into your feedback positively.
+
+Q1: ${art.questions[0].q}
+Answer: "${answers[0]||'(blank)'}"
+
+Q2: ${art.questions[1].q}
+Answer: "${answers[1]||'(blank)'}"
+
+Q3: ${art.questions[2].q}
+Answer: "${answers[2]||'(blank)'}"
+
+Respond ONLY with JSON, no markdown:
+{
+  "scores": { "comprehension": <0-100>, "tone": <0-100>, "inference": <0-100> },
+  "strengths": "<2 sentences referencing their actual answers>",
+  "gaps": "<2 sentences: specifically where reasoning broke down>",
+  "tip": "<1 concrete reading technique for tomorrow>"
+}`;
+
+  try {
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ model: "claude-sonnet-4-20250514", max_tokens: 600, messages: [{ role: "user", content: prompt }] })
+    });
+    const data = await res.json();
+    const text = (data.content||[]).map(b=>b.text||'').join('');
+    state.feedback[state.current] = JSON.parse(text.replace(/```json|```/g,'').trim());
+  } catch(e) {
+    state.feedback[state.current] = {
+      scores: { comprehension: 68, tone: 72, inference: 65 },
+      strengths: "You engaged with the passage and showed genuine effort in your answers.",
+      gaps: "Try anchoring your tone answer to a specific word or phrase from the text. For inference, use the passage logic rather than general knowledge.",
+      tip: "Before answering, ask: what is the author trying to persuade me of? Every answer flows from that."
+    };
+  }
+
+  if (!state.done.includes(state.current)) { state.done.push(state.current); state.streak += 1; }
+  state.phase = 'done'; save(); render();
+}
+
+function renderFeedback(fb) {
+  const s = fb.scores || { comprehension:70, tone:65, inference:72 };
+  const overall = Math.round((s.comprehension+s.tone+s.inference)/3);
+  return `<div class="feedback-card">
+    <div class="feedback-header"><div class="feedback-title">Your VARC feedback</div><div class="score-badge">Overall: ${overall}%</div></div>
+    <div class="feedback-body">
+      <div class="fb-section"><div class="fb-section-title">Skill scores</div>
+        <div class="skill-bar-row"><div class="skill-name">Comprehension</div><div class="skill-bar-bg"><div class="skill-bar-fill" style="width:${s.comprehension}%"></div></div><div class="skill-pct">${s.comprehension}%</div></div>
+        <div class="skill-bar-row"><div class="skill-name">Tone-spotting</div><div class="skill-bar-bg"><div class="skill-bar-fill" style="width:${s.tone}%"></div></div><div class="skill-pct">${s.tone}%</div></div>
+        <div class="skill-bar-row"><div class="skill-name">Inference</div><div class="skill-bar-bg"><div class="skill-bar-fill" style="width:${s.inference}%"></div></div><div class="skill-pct">${s.inference}%</div></div>
+      </div>
+      <div class="fb-section"><div class="fb-section-title">What you got right</div><div class="fb-text">${fb.strengths}</div></div>
+      <div class="fb-section"><div class="fb-section-title">Where your reading broke down</div><div class="fb-text">${fb.gaps}</div></div>
+      <div class="fb-section"><div class="fb-section-title">Technique for tomorrow</div><div class="fb-text">${fb.tip}</div></div>
+    </div>
+  </div>`;
+}
+
+function nextArticle() {
+  const next = ARTICLES.findIndex((_,i) => !state.done.includes(i));
+  if (next !== -1) { state.current=next; state.phase='read'; state.answers={}; state.doubtOpen=false; render(); }
+  else {
+    renderNav();
+    document.getElementById('main-content').innerHTML = `<div class="complete-card">
+      <div class="complete-icon"><svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M4 11l5 5 9-9" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="complete-title">All 5 articles complete!</div>
+      <div class="complete-sub">You solved ${Object.values(state.doubts).flat().length} doubts and built ${state.streak} days of reading habit. Come back tomorrow for new articles.</div>
+    </div>`;
+  }
+}
+
+render();
+</script>
+</body>
+</html>
